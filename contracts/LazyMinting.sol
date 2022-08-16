@@ -1,13 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "hardhat/console.sol";
 
 contract LazyMinting is ERC721URIStorage, EIP712, AccessControl {
     using ECDSA for bytes32;
@@ -30,13 +28,10 @@ contract LazyMinting is ERC721URIStorage, EIP712, AccessControl {
         payable
         returns (uint256)
     {
-        // require(user != address(0), "Called by zero address");
         require(msg.value >= voucher.minPrice, "Insufficient funds");
 
         _verify(voucher, signature);
-        // console.log("=======", voucher.buyer);
         _mint(voucher.buyer, voucher.tokenId);
-        // /console.log("--------", msg.sender);
         _transfer(voucher.buyer, msg.sender, voucher.tokenId);
         totalWithdrawAmount[voucher.buyer] += msg.value;
         return voucher.tokenId;

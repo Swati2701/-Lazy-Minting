@@ -1,3 +1,4 @@
+const { BigNumber } = require('@ethersproject/bignumber')
 const {
 	time,
 	loadFixture,
@@ -6,8 +7,12 @@ const { anyValue } = require('@nomicfoundation/hardhat-chai-matchers/withArgs')
 const { expect } = require('chai')
 const { useTabs } = require('prettier-plugin-solidity/src/options')
 const nodes = require('prettier-plugin-solidity/src/nodes')
-const { ThrowStatement } = require('prettier-plugin-solidity/src/nodes')
+const {
+	ThrowStatement,
+	ArrayTypeName,
+} = require('prettier-plugin-solidity/src/nodes')
 const { ethers, tasks } = require('hardhat')
+const { solidity } = require('ethereum-waffle')
 
 // const voucher = { tokenId, uri, minPrice }
 // const domain = await this._signingDomain()
@@ -20,20 +25,21 @@ const types = {
 		{ name: 'buyer', type: 'address' },
 	],
 }
+
 describe('LazyMinting', async function () {
 	// We define a fixture to reuse the same setup in every test.
 	// We use loadFixture to run this setup once, snapshot that state,
 	// and reset Hardhat Network to that snapshopt in every test.
 	async function deployTokenFixture() {
 		// Contracts are deployed using the first signer/account by default
-		const [owner, user] = await ethers.getSigners()
+		const [owner, user, user2] = await ethers.getSigners()
 
 		const LazyMinting = await ethers.getContractFactory('LazyMinting')
 		const lazyMinting = await LazyMinting.deploy()
 		console.log('lazy Minting address:', lazyMinting.address)
 
 		voucher = { tokenId: 1, minPrice: 1, uri: '', buyer: owner.address }
-		return { lazyMinting, owner, user }
+		return { lazyMinting, owner, user, user2 }
 	}
 	describe('Name & symbol', function () {
 		it('Should have same Name', async function () {
@@ -61,19 +67,16 @@ describe('LazyMinting', async function () {
 				types,
 				voucher
 			)
-			// console.log(signature)
-			// console.log('user Addss', user.address)
-			// console.log('owner addsss', owner.address)
 			await lazyMinting.connect(user).redeem(voucher, signature, {
 				value: ethers.utils.parseEther('0.05'),
 			})
-
-			console.log(
+			expect(
 				await lazyMinting
 					.connect(user)
 					.totalWithdrawAmount(owner.address)
-			)
+			).to.be.equal('50000000000000000')
 		})
+
 		it('error if Reddem same  NFT multiple times', async function () {
 			const { lazyMinting, owner, user } = await loadFixture(
 				deployTokenFixture
@@ -127,6 +130,12 @@ describe('LazyMinting', async function () {
 						value: ethers.utils.parseEther('0.001'),
 					}
 				)
+
+			expect(
+				await lazyMinting
+					.connect(user)
+					.totalWithdrawAmount(owner.address)
+			).to.be.equal('1001000000000000000')
 		})
 	})
 })

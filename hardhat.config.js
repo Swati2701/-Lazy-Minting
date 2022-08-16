@@ -1,5 +1,6 @@
 require('@nomicfoundation/hardhat-toolbox')
 require('dotenv').config()
+require('solidity-coverage')
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const MATIC_KEY = process.env.MATIC_PRIVATE_KEY

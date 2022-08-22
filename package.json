@@ -12,7 +12,6 @@
 	"dependencies": {
 		"@openzeppelin/contracts": "^4.7.0",
 		"dotenv": "^16.0.1",
-		"ethereum-waffle": "^3.4.4",
 		"hardhat": "^2.10.0",
 		"prettier": "^2.7.1",
 		"prettier-plugin-solidity": "^1.0.0-dev.22",

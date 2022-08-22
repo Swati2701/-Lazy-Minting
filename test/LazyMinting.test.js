@@ -12,10 +12,7 @@ const {
 	ArrayTypeName,
 } = require('prettier-plugin-solidity/src/nodes')
 const { ethers, tasks } = require('hardhat')
-const { solidity } = require('ethereum-waffle')
 
-// const voucher = { tokenId, uri, minPrice }
-// const domain = await this._signingDomain()
 let voucher
 const types = {
 	NFTVoucher: [
@@ -59,11 +56,12 @@ describe('LazyMinting', async function () {
 			)
 			const signature = await user._signTypedData(
 				{
-					name: 'LazyMntng',
+					name: 'lazyMinting',
 					version: '1',
 					chainId: 80001,
 					verifyingContract: lazyMinting.address,
 				},
+
 				types,
 				voucher
 			)
@@ -137,5 +135,42 @@ describe('LazyMinting', async function () {
 					.totalWithdrawAmount(owner.address)
 			).to.be.equal('1001000000000000000')
 		})
+	})
+	it('Withdraw amount', async function () {
+		const { user, owner, lazyMinting } = await loadFixture(
+			deployTokenFixture
+		)
+
+		let signature = await user._signTypedData(
+			{
+				name: 'LazyMntng',
+				version: '1',
+				chainId: 80001,
+				verifyingContract: lazyMinting.address,
+			},
+			types,
+			voucher
+		)
+		await lazyMinting.connect(user).redeem(voucher, signature, {
+			value: ethers.utils.parseEther('1'),
+		})
+
+		await lazyMinting
+			.connect(user)
+			.redeem(
+				{ tokenId: 2, minPrice: 1, uri: '', buyer: owner.address },
+				signature,
+				{
+					value: ethers.utils.parseEther('0.001'),
+				}
+			)
+
+		expect(
+			await lazyMinting.connect(user).totalWithdrawAmount(owner.address)
+		).to.be.equal('1001000000000000000')
+
+		await lazyMinting.connect(owner).withdraw(voucher)
+		console.log(await lazyMinting.totalWithdrawAmount(owner.address))
+		// console.log(ethers.utils.getBalance(owner.address))
 	})
 })

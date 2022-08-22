@@ -37,6 +37,13 @@ contract LazyMinting is ERC721URIStorage, EIP712, AccessControl {
         return voucher.tokenId;
     }
 
+    function withdraw(NFTVoucher calldata voucher) external {
+        require(voucher.buyer == msg.sender, "not a valid user");
+        uint256 amount = totalWithdrawAmount[voucher.buyer];
+        totalWithdrawAmount[msg.sender] = 0;
+        payable(voucher.buyer).transfer(amount);
+    }
+
     function _hash(NFTVoucher calldata voucher)
         internal
         view

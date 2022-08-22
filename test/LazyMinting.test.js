@@ -168,9 +168,12 @@ describe('LazyMinting', async function () {
 		expect(
 			await lazyMinting.connect(user).totalWithdrawAmount(owner.address)
 		).to.be.equal('1001000000000000000')
-
 		await lazyMinting.connect(owner).withdraw(voucher)
-		console.log(await lazyMinting.totalWithdrawAmount(owner.address))
-		// console.log(ethers.utils.getBalance(owner.address))
+		expect(
+			await lazyMinting.totalWithdrawAmount(owner.address)
+		).to.be.equal('0')
+		expect(await ethers.provider.getBalance(owner.address)).to.be.equal(
+			'10000993966336569570744'
+		)
 	})
 })
